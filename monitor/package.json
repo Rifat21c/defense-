@@ -1,0 +1,43 @@
+{
+  "name": "assessnova-monitor",
+  "version": "1.0.0",
+  "private": true,
+  "author": "AssessNova AI",
+  "description": "AssessNova Monitor desktop assessment integrity client",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "node scripts/electron-command.js electron .",
+    "start": "node scripts/electron-command.js electron .",
+    "build": "node scripts/electron-command.js electron-builder --win --x64",
+    "build:dir": "node scripts/electron-command.js electron-builder --dir --win --x64",
+    "build:portable": "node scripts/electron-command.js electron-builder --win portable --x64"
+  },
+  "build": {
+    "appId": "com.assessnova.monitor",
+    "productName": "AssessNova Monitor",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "signAndEditExecutable": false,
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^35.7.5",
+    "electron-builder": "latest"
+  }
+}

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AssessNova Monitor</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="panel login-panel" id="loginPanel">
+        <p class="eyebrow">AssessNova Monitor</p>
+        <h1>Assessment integrity client</h1>
+        <p class="muted">Sign in with the same student account used on the AssessNova AI website.</p>
+
+        <form id="loginForm">
+          <label>
+            Backend URL
+            <input id="backendUrl" value="https://assessnova-ai-starter.vercel.app" required />
+          </label>
+          <label>
+            Student email
+            <input id="email" type="email" value="student@assessnova.edu" required />
+          </label>
+          <label>
+            Password
+            <input id="password" type="password" value="password123" required />
+          </label>
+          <button type="submit">Connect monitor</button>
+        </form>
+        <p class="error" id="loginError"></p>
+      </section>
+
+      <section class="panel dashboard hidden" id="dashboard">
+        <div class="topbar">
+          <div>
+            <p class="eyebrow">Live client</p>
+            <h1 id="studentName">Student</h1>
+          </div>
+          <button class="secondary" id="logoutButton">Logout</button>
+        </div>
+
+        <div class="stats">
+          <article>
+            <span>Status</span>
+            <strong id="connectionStatus">Offline</strong>
+          </article>
+          <article>
+            <span>Exam</span>
+            <strong id="examTitle">Waiting</strong>
+          </article>
+          <article>
+            <span>Risk score</span>
+            <strong id="riskScore">0</strong>
+          </article>
+          <article class="browser-card">
+            <span>Browser page</span>
+            <strong id="browserPage">Not detected</strong>
+            <small id="browserUrl"></small>
+          </article>
+        </div>
+
+        <div class="notice" id="sessionNotice">
+          Open an exam in the AssessNova AI website. Monitoring starts automatically when a live exam session is detected.
+        </div>
+
+        <div class="tools">
+          <button id="testAltTab">Test Alt+Tab</button>
+          <button id="testBlockedApp">Test blocked app</button>
+          <button id="testInactive">Test inactivity</button>
+        </div>
+
+        <div class="timeline">
+          <h2>Latest activity</h2>
+          <ul id="events"></ul>
+        </div>
+      </section>
+    </main>
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>
