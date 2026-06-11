@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell, Panel } from "@/components/AppShell";
-import { createQuiz, getData, requireRole } from "@/lib/demoStore";
+import { createQuiz, generateAiQuestions, getData, requireRole } from "@/lib/demoStore";
 import type { AppData, Difficulty, User } from "@/lib/types";
 
 export default function QuizCreationPage() {
@@ -17,6 +17,10 @@ export default function QuizCreationPage() {
   const [totalMarks, setTotalMarks] = useState(20);
   const [difficulty, setDifficulty] = useState<Difficulty>("Medium");
   const [integrityEnabled, setIntegrityEnabled] = useState(true);
+  const [questionTopic, setQuestionTopic] = useState("");
+  const [questionContext, setQuestionContext] = useState("");
+  const [autoGenerateQuestions, setAutoGenerateQuestions] = useState(true);
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     const auth = requireRole(["professor", "admin"]);
@@ -42,9 +46,10 @@ export default function QuizCreationPage() {
     return data.courses.filter((course) => course.professor_id === user.id);
   }, [data, user]);
 
-  function handleCreate(e: React.FormEvent) {
+  async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!user || !courseId || !title.trim()) return;
+    setCreating(true);
     const quiz = createQuiz({
       course_id: courseId,
       title,
@@ -55,6 +60,16 @@ export default function QuizCreationPage() {
       integrity_enabled: integrityEnabled,
       professor_id: user.id,
     });
+
+    if (autoGenerateQuestions) {
+      await generateAiQuestions(
+        quiz.id,
+        questionTopic || title,
+        difficulty,
+        questionContext || description,
+      );
+    }
+
     router.push(`/quizzes/${quiz.id}/questions`);
   }
 
@@ -80,6 +95,31 @@ export default function QuizCreationPage() {
             <textarea className="mt-2 min-h-24 w-full rounded-xl border border-slate-200 p-3" value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
           <div>
+            <label className="text-sm font-medium text-slate-700">Question topic</label>
+            <input
+              className="mt-2 w-full rounded-xl border border-slate-200 p-3"
+              placeholder="Machine learning"
+              value={questionTopic}
+              onChange={(e) => setQuestionTopic(e.target.value)}
+            />
+          </div>
+          <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+            <input type="checkbox" checked={autoGenerateQuestions} onChange={(e) => setAutoGenerateQuestions(e.target.checked)} />
+            <span>
+              <span className="block font-medium">Generate starter questions</span>
+              <span className="text-sm text-slate-600">Creates original MCQs from the topic and context after saving.</span>
+            </span>
+          </label>
+          <div className="lg:col-span-2">
+            <label className="text-sm font-medium text-slate-700">Question context</label>
+            <textarea
+              className="mt-2 min-h-24 w-full rounded-xl border border-slate-200 p-3"
+              placeholder="Example: supervised learning, classification, regression, overfitting, training/test split"
+              value={questionContext}
+              onChange={(e) => setQuestionContext(e.target.value)}
+            />
+          </div>
+          <div>
             <label className="text-sm font-medium text-slate-700">Duration minutes</label>
             <input className="mt-2 w-full rounded-xl border border-slate-200 p-3" type="number" min={1} value={duration} onChange={(e) => setDuration(Number(e.target.value))} />
           </div>
@@ -103,7 +143,9 @@ export default function QuizCreationPage() {
             </span>
           </label>
           <div className="lg:col-span-2">
-            <button className="rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white">Create quiz and add questions</button>
+            <button disabled={creating} className="rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60">
+              {creating ? "Creating quiz..." : autoGenerateQuestions ? "Create quiz and generate questions" : "Create quiz and add questions"}
+            </button>
           </div>
         </form>
       </Panel>
