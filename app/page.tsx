@@ -54,7 +54,7 @@ export default function HomePage() {
         <div>
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-secondary/20 bg-secondary/10 px-3 py-1 font-label text-xs font-semibold uppercase tracking-[0.18em] text-secondary">
             <Sparkles size={16} />
-            Gen-3 integrity engine live
+            Integrity monitoring module live
           </div>
           <h1 className="max-w-4xl text-5xl font-bold leading-tight tracking-tight md:text-7xl">
             Preserve academic <span className="text-gradient-premium">excellence</span> through advanced AI.
@@ -74,12 +74,6 @@ export default function HomePage() {
               <Download size={18} />
               Download monitor
             </a>
-          </div>
-          <div className="mt-12 flex flex-wrap items-center gap-6 text-on-surface-variant/55">
-            <span className="font-label text-xs uppercase tracking-[0.24em]">Trusted by</span>
-            <span className="font-bold">MITRA</span>
-            <span className="font-bold">STANFORD CORE</span>
-            <span className="font-bold">OXFORD ANALYTICA</span>
           </div>
         </div>
 
