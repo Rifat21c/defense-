@@ -11,6 +11,7 @@ export default function AddQuestionsPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [data, setData] = useState<AppData | null>(null);
+  const [generating, setGenerating] = useState(false);
   const [form, setForm] = useState<Omit<Question, "id" | "quiz_id">>({
     question_text: "",
     option_a: "",
@@ -58,9 +59,11 @@ export default function AddQuestionsPage() {
     setData(getData());
   }
 
-  function handleGenerate() {
-    generateAiQuestions(params.id, form.topic || "Course Topic", form.difficulty as Difficulty);
+  async function handleGenerate() {
+    setGenerating(true);
+    await generateAiQuestions(params.id, form.topic || "Course Topic", form.difficulty as Difficulty);
     setData(getData());
+    setGenerating(false);
   }
 
   if (!user || !data || !model?.quiz) return null;
@@ -98,7 +101,9 @@ export default function AddQuestionsPage() {
             <input className="w-full rounded-xl border border-slate-200 p-3" placeholder="Topic" value={form.topic} onChange={(e) => update("topic", e.target.value)} required />
             <div className="flex flex-wrap gap-3">
               <button className="rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white">Save question</button>
-              <button type="button" onClick={handleGenerate} className="rounded-xl border border-slate-200 px-5 py-3 font-semibold">Generate AI sample questions</button>
+              <button type="button" onClick={handleGenerate} disabled={generating} className="rounded-xl border border-slate-200 px-5 py-3 font-semibold disabled:cursor-not-allowed disabled:opacity-60">
+                {generating ? "Generating..." : "Generate AI questions"}
+              </button>
             </div>
           </form>
         </Panel>
