@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell, EmptyState, Panel, RiskBadge, StatCard } from "@/components/AppShell";
-import { createCourse, getData, getIntegritySummary, requireRole } from "@/lib/demoStore";
+import { createCourse, getData, getIntegritySummary, requireRole, scoreOutOf } from "@/lib/demoStore";
 import type { AppData, User } from "@/lib/types";
 
 export default function ProfessorDashboardPage() {
@@ -157,7 +157,7 @@ export default function ProfessorDashboardPage() {
                   <tr key={submission.id} className="border-t border-slate-100">
                     <td className="py-3 font-medium">{student?.name}</td>
                     <td>{quiz?.title}</td>
-                    <td>{submission.score}/{quiz?.total_marks}</td>
+                    <td>{scoreOutOf(submission.score, quiz?.total_marks || 0)}/{quiz?.total_marks || 0}</td>
                     <td><RiskBadge risk={summary.risk} /></td>
                     <td>{new Date(submission.submitted_at).toLocaleDateString()}</td>
                   </tr>

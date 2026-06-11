@@ -31,7 +31,11 @@ export default function AnalyticsPage() {
 
   if (!user || !data) return null;
 
-  const average = Math.round(rows.reduce((total, item) => total + item.average_score, 0) / Math.max(rows.length, 1));
+  const safeRows = rows.map((item) => ({
+    ...item,
+    average_score: Math.min(100, Math.max(0, Math.round(item.average_score))),
+  }));
+  const average = Math.round(safeRows.reduce((total, item) => total + item.average_score, 0) / Math.max(safeRows.length, 1));
   const weakTopicCount = new Set(rows.flatMap((item) => item.weak_topics)).size;
 
   return (
@@ -44,7 +48,7 @@ export default function AnalyticsPage() {
 
       <Panel title="Performance Chart">
         <div className="space-y-4">
-          {rows.map((item) => {
+          {safeRows.map((item) => {
             const student = data.users.find((userItem) => userItem.id === item.student_id);
             const course = data.courses.find((courseItem) => courseItem.id === item.course_id);
             return (
@@ -54,7 +58,7 @@ export default function AnalyticsPage() {
                   <span>{item.average_score}%</span>
                 </div>
                 <div className="h-3 rounded-full bg-slate-100">
-                  <div className="h-3 rounded-full bg-cyan-500" style={{ width: `${Math.min(item.average_score, 100)}%` }} />
+                  <div className="h-3 rounded-full bg-cyan-500" style={{ width: `${item.average_score}%` }} />
                 </div>
               </div>
             );
@@ -64,7 +68,7 @@ export default function AnalyticsPage() {
 
       <Panel title="Recommendations">
         <div className="grid gap-4 md:grid-cols-2">
-          {rows.map((item) => {
+          {safeRows.map((item) => {
             const course = data.courses.find((courseItem) => courseItem.id === item.course_id);
             return (
               <div key={item.id} className="rounded-xl border border-slate-200 p-4">

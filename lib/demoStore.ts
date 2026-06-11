@@ -212,6 +212,16 @@ export function routeForRole(role: Role) {
   return "/student";
 }
 
+export function scorePercent(score: number, total: number) {
+  if (!total) return 0;
+  return Math.min(100, Math.max(0, Math.round((score / total) * 100)));
+}
+
+export function scoreOutOf(score: number, total: number) {
+  if (!total) return Math.max(0, Math.round(score));
+  return Math.min(total, Math.max(0, Math.round(score)));
+}
+
 export function requireRole(allowed: Role[]) {
   const user = getCurrentUser();
   if (!user) return { user: null, redirect: "/login" };
@@ -397,18 +407,24 @@ export function submitQuiz(quizId: string, studentId: string, answers: Record<st
   const quiz = data.quizzes.find((item) => item.id === quizId);
   const questions = data.questions.filter((item) => item.quiz_id === quizId);
 
-  let score = 0;
+  let rawScore = 0;
   const missedTopics: string[] = [];
 
   questions.forEach((question) => {
     if (answers[question.id] === question.correct_answer) {
-      score += question.marks;
+      rawScore += question.marks;
     } else if (!missedTopics.includes(question.topic)) {
       missedTopics.push(question.topic);
     }
   });
 
-  const percentage = quiz?.total_marks ? Math.round((score / quiz.total_marks) * 100) : 0;
+  const possibleMarks = questions.reduce((total, question) => total + question.marks, 0);
+  const quizTotal = quiz?.total_marks || possibleMarks;
+  const score =
+    possibleMarks > 0 && quizTotal > 0
+      ? scoreOutOf(Math.round((rawScore / possibleMarks) * quizTotal), quizTotal)
+      : rawScore;
+  const percentage = scorePercent(score, quizTotal);
   const ai_feedback =
     missedTopics.length > 0
       ? `You scored ${percentage}%. Focus next on ${missedTopics.join(", ")}. Review examples, retry practice questions, and summarize each weak topic in your own words.`
@@ -435,7 +451,7 @@ export function submitQuiz(quizId: string, studentId: string, answers: Record<st
     const average =
       courseSubmissions.reduce((total, item) => {
         const itemQuiz = data.quizzes.find((quizItem) => quizItem.id === item.quiz_id);
-        return total + (itemQuiz?.total_marks ? (item.score / itemQuiz.total_marks) * 100 : 0);
+        return total + scorePercent(item.score, itemQuiz?.total_marks || 0);
       }, 0) / Math.max(courseSubmissions.length, 1);
 
     const existing = data.analytics.find(
@@ -446,7 +462,7 @@ export function submitQuiz(quizId: string, studentId: string, answers: Record<st
       student_id: studentId,
       course_id: courseId,
       weak_topics: missedTopics,
-      average_score: Math.round(average),
+      average_score: Math.min(100, Math.max(0, Math.round(average))),
       recommendation:
         missedTopics.length > 0
           ? `Revise ${missedTopics.join(", ")} and complete one short practice set before your next attempt.`
@@ -488,8 +504,7 @@ export function getIntegritySummary(quizId: string, studentId: string) {
 }
 
 export function gradeLabel(score: number, total: number) {
-  if (!total) return "0%";
-  return `${Math.round((score / total) * 100)}%`;
+  return `${scorePercent(score, total)}%`;
 }
 
 export function systemHealth(data = getData()) {

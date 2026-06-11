@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell, EmptyState, Panel, StatCard } from "@/components/AppShell";
-import { getData, gradeLabel, joinCourse, requireRole } from "@/lib/demoStore";
+import { getData, gradeLabel, joinCourse, requireRole, scorePercent } from "@/lib/demoStore";
 import type { AppData, User } from "@/lib/types";
 
 export default function StudentDashboardPage() {
@@ -42,10 +42,10 @@ export default function StudentDashboardPage() {
     const average =
       submissions.reduce((total, submission) => {
         const quiz = data.quizzes.find((item) => item.id === submission.quiz_id);
-        return total + (quiz?.total_marks ? (submission.score / quiz.total_marks) * 100 : 0);
+        return total + scorePercent(submission.score, quiz?.total_marks || 0);
       }, 0) / Math.max(submissions.length, 1);
 
-    return { availableCourses, courses, quizzes, submissions, analytics, average: Math.round(average) };
+    return { availableCourses, courses, quizzes, submissions, analytics, average: Math.min(100, Math.round(average)) };
   }, [data, user]);
 
   function handleJoin(e: React.FormEvent) {

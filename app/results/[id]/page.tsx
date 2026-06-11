@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell, Panel, RiskBadge, StatCard } from "@/components/AppShell";
-import { getData, getIntegritySummary, gradeLabel, requireRole } from "@/lib/demoStore";
+import { getData, getIntegritySummary, gradeLabel, requireRole, scoreOutOf } from "@/lib/demoStore";
 import type { AppData, User } from "@/lib/types";
 
 export default function ResultDetailsPage() {
@@ -40,7 +40,7 @@ export default function ResultDetailsPage() {
   return (
     <AppShell user={user} title="Result Details" subtitle={`${model.student?.name} / ${model.quiz.title}`}>
       <div className="grid gap-4 md:grid-cols-4">
-        <StatCard label="Score" value={`${model.submission.score}/${model.quiz.total_marks}`} helper={gradeLabel(model.submission.score, model.quiz.total_marks)} />
+        <StatCard label="Score" value={`${scoreOutOf(model.submission.score, model.quiz.total_marks)}/${model.quiz.total_marks}`} helper={gradeLabel(model.submission.score, model.quiz.total_marks)} />
         <StatCard label="Course" value={model.course?.title || "Course"} helper={model.quiz.difficulty} />
         <StatCard label="Submitted" value={new Date(model.submission.submitted_at).toLocaleDateString()} helper="Assessment complete" />
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
