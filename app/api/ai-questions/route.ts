@@ -15,11 +15,21 @@ function questionId(index: number) {
 }
 
 function keywordsFrom(topic: string, description: string) {
+  const phrases = description
+    .split(/[,;.\n]+/)
+    .map((phrase) => phrase.trim())
+    .filter((phrase) => phrase.length > 3)
+    .slice(0, 6);
+
+  if (phrases.length > 0) return phrases;
+
+  const topicWords = new Set(topic.toLowerCase().split(/\s+/));
   const words = `${topic} ${description}`
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
     .filter((word) => word.length > 4)
+    .filter((word) => !topicWords.has(word))
     .filter((word) => !["about", "which", "their", "there", "these", "those", "question"].includes(word));
 
   return Array.from(new Set(words)).slice(0, 6);
@@ -53,11 +63,12 @@ function buildLocalOriginalQuestions(input: {
   const keywords = keywordsFrom(input.topic, input.description);
   const focus = keywords[0] || input.topic;
   const secondFocus = keywords[1] || "core concept";
+  const thirdFocus = keywords[2] || "real-world application";
   const scenario = input.description || `a course assessment about ${input.topic}`;
   const candidates: Array<Omit<GeneratedQuestion, "topic" | "difficulty" | "marks">> = [
     {
-      question_text: `In ${scenario}, what is the most accurate purpose of ${focus} in ${input.topic}?`,
-      option_a: `To support the main learning objective of ${input.topic}`,
+      question_text: `In ${input.topic}, what is the main purpose of ${focus}?`,
+      option_a: `To help explain or solve a specific ${input.topic} problem`,
       option_b: "To remove the need for assessment criteria",
       option_c: "To make every answer automatically correct",
       option_d: "To avoid explaining the concept to learners",
@@ -65,7 +76,7 @@ function buildLocalOriginalQuestions(input: {
     },
     {
       question_text: `Which example best demonstrates practical understanding of ${input.topic}?`,
-      option_a: `Applying ${focus} to solve a realistic problem`,
+      option_a: `Applying ${focus} within this context: ${scenario}`,
       option_b: "Memorizing unrelated definitions only",
       option_c: "Skipping the topic when it becomes difficult",
       option_d: "Choosing answers randomly without reasoning",
@@ -78,6 +89,14 @@ function buildLocalOriginalQuestions(input: {
       option_c: "Submit the assessment without revision",
       option_d: "Delete the topic from the course outline",
       correct_answer: "B",
+    },
+    {
+      question_text: `How does ${thirdFocus} help evaluate understanding of ${input.topic}?`,
+      option_a: "It connects the concept to evidence and decision-making",
+      option_b: "It guarantees full marks without reasoning",
+      option_c: "It removes the need to compare alternatives",
+      option_d: "It makes the topic unrelated to the course",
+      correct_answer: "A",
     },
     {
       question_text: `For a ${input.difficulty.toLowerCase()} assessment on ${input.topic}, which question design is strongest?`,
