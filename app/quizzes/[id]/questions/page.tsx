@@ -12,6 +12,7 @@ export default function AddQuestionsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [data, setData] = useState<AppData | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [generationDescription, setGenerationDescription] = useState("");
   const [form, setForm] = useState<Omit<Question, "id" | "quiz_id">>({
     question_text: "",
     option_a: "",
@@ -61,9 +62,17 @@ export default function AddQuestionsPage() {
 
   async function handleGenerate() {
     setGenerating(true);
-    await generateAiQuestions(params.id, form.topic || "Course Topic", form.difficulty as Difficulty);
-    setData(getData());
-    setGenerating(false);
+    try {
+      await generateAiQuestions(
+        params.id,
+        form.topic || "Course Topic",
+        form.difficulty as Difficulty,
+        generationDescription || model?.quiz?.description || "",
+      );
+      setData(getData());
+    } finally {
+      setGenerating(false);
+    }
   }
 
   if (!user || !data || !model?.quiz) return null;
@@ -99,6 +108,12 @@ export default function AddQuestionsPage() {
               </select>
             </div>
             <input className="w-full rounded-xl border border-slate-200 p-3" placeholder="Topic" value={form.topic} onChange={(e) => update("topic", e.target.value)} required />
+            <textarea
+              className="min-h-24 w-full rounded-xl border border-slate-200 p-3"
+              placeholder="Topic description for AI generation, for example: supervised learning, regression vs classification, overfitting, bias-variance tradeoff"
+              value={generationDescription}
+              onChange={(e) => setGenerationDescription(e.target.value)}
+            />
             <div className="flex flex-wrap gap-3">
               <button className="rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white">Save question</button>
               <button type="button" onClick={handleGenerate} disabled={generating} className="rounded-xl border border-slate-200 px-5 py-3 font-semibold disabled:cursor-not-allowed disabled:opacity-60">

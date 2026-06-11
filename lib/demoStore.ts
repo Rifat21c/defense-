@@ -334,8 +334,16 @@ export function addQuestion(input: Omit<Question, "id">) {
   return question;
 }
 
-export async function generateAiQuestions(quizId: string, topic: string, difficulty: Difficulty) {
+export async function generateAiQuestions(
+  quizId: string,
+  topic: string,
+  difficulty: Difficulty,
+  description = "",
+) {
   const data = getData();
+  const existingQuestionTexts = data.questions
+    .filter((question) => question.quiz_id === quizId)
+    .map((question) => question.question_text);
   let questions = buildGeneratedQuestions(quizId, topic, difficulty);
 
   if (typeof window !== "undefined") {
@@ -343,7 +351,7 @@ export async function generateAiQuestions(quizId: string, topic: string, difficu
       const response = await fetch("/api/ai-questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quizId, topic, difficulty, count: 3 }),
+        body: JSON.stringify({ quizId, topic, description, difficulty, count: 3, existingQuestionTexts }),
       });
       const payload = (await response.json()) as { questions?: Question[] };
       if (response.ok && Array.isArray(payload.questions) && payload.questions.length > 0) {
